@@ -1,403 +1,123 @@
-# Google Drive Folder Backup Tool - User Guide (English)
+### 🇺🇸 BẢN 2: ENGLISH
+*Tên file gợi ý: `USER_GUIDE_ENGLISH.md`*
+
+```markdown
+# User Guide: Google Drive Backup Tool v1.9.1
+
+**Version:** 1.9.1 FINAL (Manual Resume Optimized)  
+**Release Date:** February 02, 2026
+
+---
 
 ## 📖 Overview
 
-This tool helps you backup entire folders from Google Drive with advanced features including multi-threaded downloads, automatic validation, and intelligent retry mechanisms. It's optimized for speed and reliability.
+The **Google Drive Backup Tool** is a robust, Python-based utility designed to run on Google Colab. It enables users to seamlessly clone or backup entire Google Drive folders to another location on the same drive.
+
+The highlight of **v1.9.1** is its **Manual Resume Optimization**, specifically engineered to handle Google API Rate Limits intelligently without losing progress or requiring complex reconfiguration.
 
 ---
 
-## 🌟 Key Features
+## ✨ Key Features
 
-- ✅ **Full Folder Backup**: Backup entire shared folders from Google Drive
-- ✅ **Automatic Naming**: Creates backup folder with "_BACKUP" suffix
-- ✅ **File Validation**: Checks file size and MD5 checksum before deletion
-- ✅ **Smart Logging**: JSON-based logging prevents duplicate backups
-- ✅ **Auto Cleanup**: Automatically removes local files after successful upload
-- ✅ **Retry Mechanism**: Handles network errors with intelligent retry
-- ✅ **Progress Tracking**: Real-time progress monitoring
-- 🚀 **Multi-threaded Downloads**: 3-5 files downloaded simultaneously
-- 🚀 **Auto-optimization**: Automatically adjusts workers based on available RAM/CPU
-- 🚀 **No Timeout Warnings**: Clean execution without unnecessary warnings
+*   **🔄 Smart Resume:** Automatically detects interrupted backup sessions and resumes from the exact point of failure without manual intervention.
+*   **🛡️ Intelligent Rate Limit Handling:** Instead of infinite retries that fail, the tool guides you to safely stop the Runtime and resume after the cooldown period.
+*   **📁 Recursive Backup:** Automatically clones all subdirectories and nested files, preserving the original folder structure.
+*   **🔐 Data Integrity Verification:** Verifies file sizes and MD5 checksums to ensure 100% data accuracy between source and destination.
+*   **🚀 Performance Optimization:** Auto-detects optimal worker threads (processes) based on available Colab CPU and RAM resources.
+*   **💾 Atomic Checkpointing:** Saves state after every successful file operation, preventing data loss during runtime disconnections.
 
 ---
 
-## 🚀 Quick Start Guide
+## ⚙️ Configuration & Setup
 
-### Step 1: Open in Google Colab
+### 1. Get Folder IDs
+You need the IDs for two folders before starting:
+1.  **Source Folder:** The folder you want to back up.
+2.  **Destination Folder:** The location where the backup will be stored.
 
-1. Upload the `.ipynb` file to Google Drive
-2. Open with Google Colab
-3. The script is ready to use!
+*   **How to get ID:** Open the folder in Google Drive -> Look at the URL. The long string between `/folders/` and `/` is the ID.
+    *   *Example:* `https://drive.google.com/drive/folders/1A2B3C4D5E...` -> ID is `1A2B3C4D5E...`
 
-### Step 2: Configure Settings
-
-Locate the **MAIN CONFIGURATION** section at the top of the script:
+### 2. Edit the Code
+Locate **STEP 3: MAIN CONFIGURATION** in the script and update the following values:
 
 ```python
-# ⚙️  MAIN CONFIGURATION - EDIT HERE
+# 📁 FOLDER IDs (REQUIRED - REPLACE WITH YOUR IDs)
+SOURCE_FOLDER_ID = 'PASTE_YOUR_SOURCE_FOLDER_ID_HERE'
+BACKUP_PARENT_ID = 'PASTE_YOUR_DESTINATION_FOLDER_ID_HERE'
 
-# 📁 Source folder ID (from Google Drive URL)
-SOURCE_FOLDER_ID = 'your-source-folder-id-here'
-
-# 📁 Backup destination folder ID (optional)
-BACKUP_PARENT_ID = 'your-backup-parent-id-here'  # or None for root
-
-# 🏷️  Backup folder suffix
-FOLDER_SUFFIX = '_BACKUP'
-
-# 🚀 Number of concurrent download threads
-MAX_WORKERS = None  # None = auto-detect, or set 4, 6, 8...
-```
-
-### Step 3: Get Folder IDs
-
-**How to get Google Drive Folder ID:**
-
-1. Open Google Drive in your browser
-2. Navigate to the folder you want to backup
-3. Look at the URL in your browser:
-   ```
-   https://drive.google.com/drive/folders/1ZY4ab0XlPHa5_t10XnSvPbWUvJRdN4Nx
-                                            ↑ This is the Folder ID
-   ```
-4. Copy everything after `/folders/`
-
-**Example:**
-- Source folder URL: `https://drive.google.com/drive/folders/1ABC123xyz`
-- Source folder ID: `1ABC123xyz`
-
-### Step 4: Run the Script
-
-1. Click **Runtime** → **Run all** in Google Colab menu
-2. When prompted, authenticate with your Google account
-3. The backup will start automatically
-4. Monitor progress in the output
-
----
-
-## ⚙️ Configuration Options
-
-### SOURCE_FOLDER_ID
-- **Required**: Yes
-- **Description**: The ID of the folder you want to backup
-- **How to find**: See Step 3 above
-- **Example**: `'1ZY4ab0XlPHa5_t10XnSvPbWUvJRdN4Nx'`
-
-### BACKUP_PARENT_ID
-- **Required**: No
-- **Description**: The ID of the folder where backup will be saved
-- **Default**: `None` (saves to root "My Drive")
-- **Example**: `'1XYZ789abc'` or `None`
-
-### FOLDER_SUFFIX
-- **Required**: No
-- **Description**: Suffix added to backup folder name
-- **Default**: `'_BACKUP'`
-- **Example**: If source is "Photos", backup will be "Photos_BACKUP"
-
-### MAX_WORKERS
-- **Required**: No
-- **Description**: Number of simultaneous download threads
-- **Default**: `None` (auto-detect based on system resources)
-- **Recommended values**: 
-  - `None` - Let system auto-detect (recommended)
-  - `3-4` - For systems with limited RAM (< 4GB)
-  - `5-8` - For systems with good RAM (8GB+)
-
----
-
-## 📊 Understanding the Output
-
-### During Backup
-
-```
-🚀 Number of workers in use: 6
-💾 Available RAM: 12.5 GB
-🖥️  CPU cores: 2
-⚙️  Optimal workers: 6
-
-📊 Found 45 items in folder
-
-🚀 Starting download of 40 files with 6 concurrent threads...
-📥 Downloading example_file.pdf...
-✅ Downloaded: example_file.pdf
-✅ Uploaded: example_file.pdf (ID: 1ABC...)
-🗑️  Cleaned up local file: example_file.pdf
-```
-
-### Statistics
-
-```
-📊 Download Stats: ✅ 38 success | ❌ 2 failed | ⏭️  5 skipped
-📊 Upload Stats: ✅ 38 success | ❌ 0 failed
-```
-
-### Final Report
-
-```
-📋 DETAILED BACKUP REPORT
-========================================
-📁 Total folders: 5
-📄 Total files: 38
-💾 Total size: 2.45 GB (2,631,456,789 bytes)
-✅ Files with MD5 validation: 38/38
-🕐 Last backup time: 2026-02-01T14:30:25
+# 🏷️  Folder Suffix
+FOLDER_SUFFIX = '_BACKUP' # The backup folder will be named "OriginalName_BACKUP"
 ```
 
 ---
 
-## 🔧 Advanced Features
+## 🚀 Usage Guide
 
-### 1. Incremental Backup
+### Standard Workflow (Recommended)
+1.  **Run All Cells:** Click `Runtime` -> `Run all`.
+2.  **Authenticate:** Grant Google Drive access permissions when prompted.
+3.  **Monitor:** Watch the progress bars and logs in the output console.
 
-The tool automatically tracks backed-up files in `backup_log.json`:
-- Already backed-up files are **skipped**
-- Only new or modified files are backed up
-- Saves time and bandwidth
+### 🛑 Handling Rate Limits (Crucial)
+This tool is built to manage `403: userRateLimitExceeded` errors effectively.
 
-### 2. Automatic Retry
-
-If files fail to download/upload:
-- Automatic retry up to 3 times per file
-- After initial backup, failed files are retried 2 more times
-- Final report shows any files that couldn't be backed up
-
-### 3. Validation
-
-Every file is validated:
-- **Size check**: Ensures downloaded file matches original size
-- **MD5 checksum**: Verifies file integrity after upload
-- **Verification**: Counts files in source vs backup folders
-
-### 4. Memory Management
-
-- Smart garbage collection prevents memory overflow
-- Automatic cleanup of temporary files
-- Optimized chunk sizes for fast transfers
+1.  Upon hitting the rate limit **3 times consecutively**, the tool will pause and display a warning.
+2.  **Follow the on-screen instructions:**
+    *   **STOP THE RUNTIME NOW:** Go to `Runtime` -> `Disconnect and delete runtime`.
+    *   **CLOSE TAB:** You can safely close your browser window.
+3.  **Wait 24 Hours:** Google resets usage quotas approximately every 24 hours.
+4.  **Resuming:**
+    *   Re-open the Colab notebook.
+    *   Click `Run All` again.
+    *   The tool will **AUTOMATICALLY DETECT** the previous session, skip completed files, and continue processing the rest.
 
 ---
 
-## 📝 Common Use Cases
+## ⚡ Advanced Features
 
-### Case 1: First-time Full Backup
+### 1. Manual Resume Mode
+Enabled by default (`True`). This is the safest mode for large backups.
+*   **True:** When limits are reached, the tool advises stopping the runtime to protect your account from temporary bans.
+*   **False:** The tool will attempt to auto-retry (Not recommended as it may prolong the ban duration).
 
+### 2. Worker Management
+The script automatically calculates the optimal number of workers based on available RAM. To override this:
 ```python
-SOURCE_FOLDER_ID = '1ABC123xyz'
-BACKUP_PARENT_ID = None  # Save to My Drive root
-FOLDER_SUFFIX = '_BACKUP'
-MAX_WORKERS = None  # Auto-detect
+MAX_WORKERS = None # None = Auto-detect, or set a specific number (e.g., 4)
 ```
 
-### Case 2: Backup to Specific Location
+### 3. Logs & State Management
+The system generates two critical files in the Colab environment:
+*   `backup_state.json`: Contains the current snapshot (pending files, failed files, timestamps). **Do not delete this** if you intend to resume later.
+*   `backup_log.json`: Contains the history of successfully backed up files.
 
-```python
-SOURCE_FOLDER_ID = '1ABC123xyz'
-BACKUP_PARENT_ID = '1XYZ789abc'  # Your "Backups" folder
-FOLDER_SUFFIX = '_2026_Feb'
-MAX_WORKERS = 6
+---
+
+## 🛠️ Utilities & Debugging
+
+After execution or for troubleshooting, use these commands in the final code cell:
+
+*   `view_state()`: View detailed backup status (pending files, failed files, timestamps).
+*   `view_log()`: View the total count of successfully backed up files.
+*   `download_files()`: Download `state.json` and `log.json` to your local machine for external record-keeping.
+
+---
+
+## ❓ Frequently Asked Questions (Q&A)
+
+**Q1: Can I close my browser while the backup is running?**
+A: Yes, but ensure the Colab tab remains open and the computer does not sleep. However, the safest method for long-term backups is to let it run until you hit a Rate Limit, then perform the "Stop Runtime" procedure and return after 24h.
+
+**Q2: Why should I stop the Runtime instead of just letting it retry?**
+A: When Google blocks access (Rate Limit), continuous retrying often results in longer lockout periods or flags your IP as suspicious. Stopping the Runtime and waiting 24h acts as a "manual reset" adhering to Google's best practices for bulk operations.
+
+**Q3: How do I know which files failed?**
+A: Run `view_state()`. Failed files are listed in the `failed_files` array. The system will automatically attempt to re-upload these files during the Resume process.
+
+**Q4: Can I change the destination folder halfway through?**
+A: No, not recommended. Changing the destination ID will break the Resume logic because the program won't find the previously backed-up files in the new location. If you must change, delete `backup_state.json` to start a fresh backup.
+
+**Q5: Does this support Google Docs/Sheets?**
+A: Currently, the tool focuses on binary files (Video, Images, Zip, PDF, etc.). While it attempts to process all items, Google Docs/Sheets behave differently as exports. It is best used for storing media and standard files.
 ```
-
-### Case 3: Limited System Resources
-
-```python
-SOURCE_FOLDER_ID = '1ABC123xyz'
-BACKUP_PARENT_ID = None
-FOLDER_SUFFIX = '_BACKUP'
-MAX_WORKERS = 3  # Use fewer threads
-```
-
----
-
-## 🛠️ Troubleshooting
-
-### Problem: "Authentication Failed"
-
-**Solution:**
-1. In Colab, go to Runtime → Restart runtime
-2. Run the authentication cell again
-3. Make sure you're using the correct Google account
-
-### Problem: "Folder ID not found"
-
-**Solution:**
-1. Check that the folder ID is correct
-2. Make sure the folder is shared with you
-3. Verify you have permission to access the folder
-
-### Problem: "Too many files failed"
-
-**Solution:**
-1. Check your internet connection
-2. Try reducing MAX_WORKERS to 3-4
-3. Run the backup again (it will skip successful files)
-
-### Problem: "Out of memory error"
-
-**Solution:**
-1. Set MAX_WORKERS to a lower value (3 or 4)
-2. The script will automatically manage memory better
-3. Consider backing up in smaller batches
-
-### Problem: "Backup is very slow"
-
-**Solution:**
-1. Increase MAX_WORKERS to 6-8 (if you have good RAM)
-2. Check your internet speed
-3. Large files naturally take longer
-
----
-
-## 📚 Additional Utilities
-
-### View Backup Log
-
-Run this cell to see all backed-up files:
-
-```python
-if os.path.exists('backup_log.json'):
-    with open('backup_log.json', 'r', encoding='utf-8') as f:
-        log_data = json.load(f)
-        print(json.dumps(log_data, indent=2, ensure_ascii=False))
-```
-
-### Download Backup Log
-
-Save the log file to your computer:
-
-```python
-from google.colab import files
-files.download('backup_log.json')
-```
-
-### Reset Backup Log
-
-⚠️ **WARNING**: This will erase all backup history and backup everything again!
-
-```python
-reset_log = {'backed_up_files': {}, 'last_run': None}
-with open('backup_log.json', 'w', encoding='utf-8') as f:
-    json.dump(reset_log, f, indent=2, ensure_ascii=False)
-print("🔄 Backup log has been reset!")
-```
-
----
-
-## ⚡ Performance Tips
-
-1. **Optimal Workers**: Leave MAX_WORKERS as `None` for best auto-detection
-2. **Large Files**: For folders with many large files (>100MB), consider MAX_WORKERS = 3-4
-3. **Many Small Files**: For folders with many small files, MAX_WORKERS = 6-8 works well
-4. **Resume Capability**: If backup stops, just run again - it will skip completed files
-5. **Internet Speed**: Faster internet = more workers beneficial
-
----
-
-## 🔒 Privacy & Security
-
-- **Local Processing**: Files are temporarily stored only in Colab's memory
-- **Automatic Cleanup**: Local files are deleted immediately after upload
-- **No External Sharing**: Your data never leaves Google's infrastructure
-- **Authentication**: Uses official Google OAuth2 authentication
-- **Permissions**: Only requires Drive API access
-
----
-
-## 📊 Backup Strategy Recommendations
-
-### For Small Folders (< 1GB, < 100 files)
-- MAX_WORKERS: Auto or 4-6
-- Expected time: 5-15 minutes
-- Run frequency: Weekly or as needed
-
-### For Medium Folders (1-10GB, 100-1000 files)
-- MAX_WORKERS: Auto or 6-8
-- Expected time: 30-90 minutes
-- Run frequency: Weekly
-
-### For Large Folders (> 10GB, > 1000 files)
-- MAX_WORKERS: Auto or 4-6 (for stability)
-- Expected time: 2+ hours
-- Run frequency: Monthly
-- Consider: Breaking into smaller sub-folders
-
----
-
-## ❓ Frequently Asked Questions
-
-**Q: Can I backup multiple folders at once?**
-A: Change SOURCE_FOLDER_ID and run the script again for each folder.
-
-**Q: Will this delete my original files?**
-A: No! It only creates copies. Your original files remain untouched.
-
-**Q: What happens if backup stops midway?**
-A: Just run the script again. It will skip already backed-up files.
-
-**Q: Can I schedule automatic backups?**
-A: Not directly in Colab, but you can set reminders to run it periodically.
-
-**Q: How much storage do I need?**
-A: At least the same size as your source folder, plus some buffer.
-
-**Q: Does it work with shared folders?**
-A: Yes! As long as you have view/download permissions.
-
----
-
-## 🆘 Support
-
-If you encounter issues:
-
-1. **Check the troubleshooting section** above
-2. **Review the output messages** - they often indicate the problem
-3. **Verify your configuration** settings are correct
-4. **Try reducing MAX_WORKERS** if experiencing errors
-5. **Check Google Drive storage quota** - you need available space
-
----
-
-## 📝 Changelog
-
-**Version 2.0 (Optimized)**
-- Added multi-threaded downloads
-- Auto-optimization based on system resources
-- Improved memory management
-- Enhanced error handling and retry logic
-- Better progress tracking
-- Removed timeout warnings
-
-**Version 1.0**
-- Initial release
-- Basic backup functionality
-- Single-threaded downloads
-
----
-
-## ✅ Best Practices
-
-1. **Test First**: Try backing up a small folder first
-2. **Monitor Progress**: Watch the output for any errors
-3. **Stable Connection**: Use stable internet connection
-4. **Adequate Storage**: Ensure enough Google Drive space
-5. **Keep Log File**: Download backup_log.json for records
-6. **Regular Backups**: Run periodically for important folders
-7. **Verify Results**: Check the final verification report
-
----
-
-## 🎯 Success Indicators
-
-Your backup is successful when you see:
-
-```
-✅ BACKUP COMPLETED SUCCESSFULLY!
-✅ VERIFICATION PASSED: All files have been backed up!
-📁 Backup folder: [Your folder name]_BACKUP
-🔗 Link: https://drive.google.com/drive/folders/[ID]
-```
-
----
-
-**Happy Backing Up! 🎉**
-
-*This tool is designed to make Google Drive backups simple, fast, and reliable. If you have suggestions or feedback, please let us know!*
